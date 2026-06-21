@@ -3,20 +3,18 @@ import httpx
 from app.config import settings
 
 
-SOCRATIC_FALLBACK = (
-    "Let's think this through together.\\n"
-    "1) Restate the problem in one sentence.\\n"
-    "2) Identify input size and constraints.\\n"
-    "3) Ask: can brute force work first?\\n"
-    "4) Which pattern fits best (two pointers, sliding window, prefix sum, etc.)?\\n"
-    "5) Test your idea on a small edge case."
-)
+SOCRATIC_FALLBACK = """Let's think this through together.
+1) Restate the problem in one sentence.
+2) Identify input size and constraints.
+3) Ask: can brute force work first?
+4) Which pattern fits best (two pointers, sliding window, prefix sum, etc.)?
+5) Test your idea on a small edge case."""
 
 
 async def get_coaching_response(question: str, topic: str, student_level: str) -> tuple[str, str]:
     if not settings.groq_api_key:
         return (
-            f"Topic: {topic} | Level: {student_level}\\n{SOCRATIC_FALLBACK}\\nQuestion: {question}",
+            f"Topic: {topic} | Level: {student_level}\n{SOCRATIC_FALLBACK}\nQuestion: {question}",
             "fallback",
         )
 

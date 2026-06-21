@@ -20,15 +20,21 @@ function App() {
   const [coachQuestion, setCoachQuestion] = useState('I am stuck. What should I think about first?')
   const [coachReply, setCoachReply] = useState('')
   const [execution, setExecution] = useState<ExecuteResponse | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    void Promise.all([fetchRoadmap(), fetchProblems()]).then(([roadmapData, problemsData]) => {
-      const initialProblem = problemsData[0] ?? null
-      setRoadmap(roadmapData)
-      setProblems(problemsData)
-      setProblem(initialProblem)
-      setCode(initialProblem?.starter_code[languageOptions[0].key] ?? '')
-    })
+    void Promise.all([fetchRoadmap(), fetchProblems()])
+      .then(([roadmapData, problemsData]) => {
+        const initialProblem = problemsData[0] ?? null
+        setRoadmap(roadmapData)
+        setProblems(problemsData)
+        setProblem(initialProblem)
+        setCode(initialProblem?.starter_code[languageOptions[0].key] ?? '')
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Failed to load AlgoForge data.'
+        setError(message)
+      })
   }, [])
 
   const dailyGoal = useMemo(() => {
@@ -38,13 +44,25 @@ function App() {
 
   const onAskCoach = async () => {
     if (!problem) return
-    const result = await askCoach(coachQuestion, problem.topic)
-    setCoachReply(result.reply)
+    try {
+      setError('')
+      const result = await askCoach(coachQuestion, problem.topic)
+      setCoachReply(result.reply)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unable to reach Logic AI coach.'
+      setError(message)
+    }
   }
 
   const onRunCode = async () => {
-    const result = await runCode(code, language.judge0, stdin)
-    setExecution(result)
+    try {
+      setError('')
+      const result = await runCode(code, language.judge0, stdin)
+      setExecution(result)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Code execution failed.'
+      setError(message)
+    }
   }
 
   return (
@@ -54,6 +72,7 @@ function App() {
         <p>{dailyGoal}</p>
         <div className="pill">Default theme: amber/orange</div>
       </header>
+      {error && <div className="error">{error}</div>}
 
       <section className="grid">
         <article className="card">

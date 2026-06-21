@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 
 from app.config import settings
 from app.schemas import CoachRequest, CoachResponse, ExecuteRequest, ExecuteResponse
@@ -73,8 +74,10 @@ async def ai_coach(request: CoachRequest) -> CoachResponse:
     try:
         reply, provider = await get_coaching_response(request.question, request.topic, request.student_level)
         return CoachResponse(reply=reply, provider=provider)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=f"AI coach failed: {exc}") from exc
+    except httpx.TimeoutException as exc:
+        raise HTTPException(status_code=504, detail="AI coach timed out.") from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"AI coach upstream error: {exc}") from exc
 
 
 @app.post("/api/code/execute", response_model=ExecuteResponse)
@@ -82,5 +85,7 @@ async def execute_code(request: ExecuteRequest) -> ExecuteResponse:
     try:
         result = await run_code(request.source_code, request.language_id, request.stdin)
         return ExecuteResponse(**result)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=f"Code execution failed: {exc}") from exc
+    except httpx.TimeoutException as exc:
+        raise HTTPException(status_code=504, detail="Code execution timed out.") from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Code execution upstream error: {exc}") from exc
