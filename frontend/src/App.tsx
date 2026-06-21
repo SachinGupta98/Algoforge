@@ -17,7 +17,7 @@ function App() {
   const [language, setLanguage] = useState(languageOptions[0])
   const [code, setCode] = useState('')
   const [stdin, setStdin] = useState('')
-  const [coachQuestion, setCoachQuestion] = useState('I am stuck. What should I think about first?')
+  const [coachQuestion, setCoachQuestion] = useState('')
   const [coachReply, setCoachReply] = useState('')
   const [execution, setExecution] = useState<ExecuteResponse | null>(null)
   const [error, setError] = useState('')
@@ -43,7 +43,10 @@ function App() {
   }, [problems.length])
 
   const onAskCoach = async () => {
-    if (!problem) return
+    if (!problem || coachQuestion.trim().length < 3) {
+      setError('Please enter at least 3 characters for a coach question.')
+      return
+    }
     try {
       setError('')
       const result = await askCoach(coachQuestion, problem.topic)
@@ -143,7 +146,12 @@ function App() {
 
         <article className="card">
           <h2>Logic AI Coach</h2>
-          <textarea value={coachQuestion} onChange={(e) => setCoachQuestion(e.target.value)} rows={5} />
+          <textarea
+            value={coachQuestion}
+            onChange={(e) => setCoachQuestion(e.target.value)}
+            rows={5}
+            placeholder="Ask the AI coach for help..."
+          />
           <button onClick={onAskCoach}>Ask Socratic Hint</button>
           <pre>{coachReply || 'No response yet.'}</pre>
         </article>

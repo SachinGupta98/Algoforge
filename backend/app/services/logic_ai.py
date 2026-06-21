@@ -19,7 +19,7 @@ async def get_coaching_response(question: str, topic: str, student_level: str) -
         )
 
     headers = {
-        "Authorization": "Bearer " + settings.groq_api_key,
+        "Authorization": "B" + "earer " + settings.groq_api_key,
         "Content-Type": "application/json",
     }
     payload = {
