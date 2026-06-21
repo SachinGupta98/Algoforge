@@ -4,6 +4,7 @@ from app.config import settings
 
 
 async def run_code(source_code: str, language_id: int, stdin: str) -> dict:
+    """Execute source code on Judge0 and return normalized execution results."""
     if not settings.judge0_rapidapi_key:
         return {
             "stdout": None,

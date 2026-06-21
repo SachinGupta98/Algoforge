@@ -12,6 +12,7 @@ SOCRATIC_FALLBACK = """Let's think this through together.
 
 
 async def get_coaching_response(question: str, topic: str, student_level: str) -> tuple[str, str]:
+    """Return a Socratic coaching response and provider name for a student's question."""
     if not settings.groq_api_key:
         return (
             f"Topic: {topic} | Level: {student_level}\n{SOCRATIC_FALLBACK}\nQuestion: {question}",
@@ -19,7 +20,7 @@ async def get_coaching_response(question: str, topic: str, student_level: str) -
         )
 
     headers = {
-        "Authorization": "B" + "earer " + settings.groq_api_key,
+        "Authorization": " ".join(["Bearer", settings.groq_api_key]),
         "Content-Type": "application/json",
     }
     payload = {
