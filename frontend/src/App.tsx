@@ -23,16 +23,13 @@ function App() {
 
   useEffect(() => {
     void Promise.all([fetchRoadmap(), fetchProblems()]).then(([roadmapData, problemsData]) => {
+      const initialProblem = problemsData[0] ?? null
       setRoadmap(roadmapData)
       setProblems(problemsData)
-      setProblem(problemsData[0] ?? null)
+      setProblem(initialProblem)
+      setCode(initialProblem?.starter_code[languageOptions[0].key] ?? '')
     })
   }, [])
-
-  useEffect(() => {
-    if (!problem) return
-    setCode(problem.starter_code[language.key] ?? '')
-  }, [problem, language])
 
   const dailyGoal = useMemo(() => {
     const total = problems.length
@@ -71,7 +68,14 @@ function App() {
           <h2>Problem Bank</h2>
           <label>
             Select problem
-            <select value={problem?.id} onChange={(e) => setProblem(problems.find((p) => p.id === e.target.value) ?? null)}>
+            <select
+              value={problem?.id}
+              onChange={(e) => {
+                const nextProblem = problems.find((p) => p.id === e.target.value) ?? null
+                setProblem(nextProblem)
+                setCode(nextProblem?.starter_code[language.key] ?? '')
+              }}
+            >
               {problems.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.title} • {p.difficulty}
@@ -94,7 +98,10 @@ function App() {
               value={language.key}
               onChange={(e) => {
                 const selected = languageOptions.find((item) => item.key === e.target.value)
-                if (selected) setLanguage(selected)
+                if (selected && problem) {
+                  setLanguage(selected)
+                  setCode(problem.starter_code[selected.key] ?? '')
+                }
               }}
             >
               {languageOptions.map((item) => (
